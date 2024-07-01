@@ -15,53 +15,79 @@ type NumberWord struct {
 	word  string
 }
 
-// NOTE: For this solution i'll focus on structuring the code and not go for performance.
-func main() {
-	// var words = [4]NumberWord{
-	// 	{word: "1abc2"},
-	// 	{word: "pqr3stu8vwx"},
-	// 	{word: "a1b2c3d4e5f"},
-	// 	{word: "treb7uchet"},
-	// }
+func findFirstNumberInWord(word string) int {
+	var result int
+	for index := 0; index < len(word); index++ {
+		letter := word[index : index+1]
+		number, err := strconv.Atoi(letter)
+		if err == nil {
+			result = number
+			break
+		}
+	}
+	return result
+}
 
+func findLastNumberInWord(word string) int {
+	var result int
+	for index := len(word); index > 0; index-- {
+		letter := word[index-1 : index]
+		number, err := strconv.Atoi(letter)
+		if err == nil {
+			result = number
+			break
+		}
+	}
+	return result
+}
+
+func replaceAllNumberWords(word string) string {
+	word = strings.ReplaceAll(word, "one", "o1e")
+	word = strings.ReplaceAll(word, "two", "t2o")
+	word = strings.ReplaceAll(word, "three", "t3e")
+	word = strings.ReplaceAll(word, "four", "f4r")
+	word = strings.ReplaceAll(word, "five", "f5e")
+	word = strings.ReplaceAll(word, "six", "s6x")
+	word = strings.ReplaceAll(word, "seven", "s7n")
+	word = strings.ReplaceAll(word, "eight", "e8t")
+	word = strings.ReplaceAll(word, "nine", "n9e")
+	return word
+}
+
+func countNumbersInWords(words []NumberWord, dataWords []string) int {
+	for dataIndex, dataWord := range dataWords {
+		revisedWord := replaceAllNumberWords(dataWord)
+
+		words[dataIndex].word = revisedWord
+	}
+
+	sum := 0
+	for _, entry := range words {
+		entry.first = findFirstNumberInWord(entry.word)
+		entry.last = findLastNumberInWord(entry.word)
+
+		fmt.Printf("%v: %v%v\r\n", entry.word, entry.first, entry.last)
+		sum += (entry.first * 10) + entry.last
+	}
+
+	return sum
+}
+
+func main() {
 	inputFile := "input.txt"
-	data_as_byte, err := os.ReadFile(inputFile)
+	dataAsByte, err := os.ReadFile(inputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var words [1001]NumberWord
-	data_as_string := bytes.NewBuffer(data_as_byte).String()
-	data_words := strings.Split(data_as_string, "\n")
+	dataAsString := bytes.NewBuffer(dataAsByte).String()
+	dataWords := strings.Split(dataAsString, "\n")
 
-	// TODO: There must be a better way - this feels oldschool
-	for index := 0; index < len(data_words); index++ {
-		words[index].word = data_words[index]
-	}
-
-	sum := 0
-	for _, entry := range words {
-		for index := 0; index < len(entry.word); index++ {
-			letter := entry.word[index : index+1]
-			number, err := strconv.Atoi(letter)
-			if err == nil {
-				entry.first = number
-				break
-			}
-		}
-
-		for index := len(entry.word); index > 0; index-- {
-			letter := entry.word[index-1 : index]
-			number, err := strconv.Atoi(letter)
-			if err == nil {
-				entry.last = number
-				break
-			}
-		}
-
-		fmt.Printf("%v%v\r\n", entry.first, entry.last)
-		sum += (entry.first * 10) + entry.last
-	}
+	sum := countNumbersInWords(words[:], dataWords)
 
 	fmt.Println("Final sum:", sum)
+
+	// Part 1: 54927
+	// Part 2: 54581
 }
